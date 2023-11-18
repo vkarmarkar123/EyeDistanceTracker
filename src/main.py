@@ -3,6 +3,7 @@
 import cv2
 import dlib  
 import numpy as np
+import time
 from est_dist import estimate_distance
 
 #initialize the Dlib face detector
@@ -15,6 +16,8 @@ cap = cv2.VideoCapture(1)
 green_color = (0, 255, 0)  # Green for safe distance
 yellow_color = (0, 255, 255)  # Yellow for middle distance
 red_color = (0, 0, 255)  # Red for too close
+
+current_state = None
 
 while True:
 
@@ -41,18 +44,29 @@ while True:
         right_eye = [(landmarks.part(n).x, landmarks.part(n).y) for n in range(42, 48)]
 
 
-        #estimate distance (defin)
+        #estimate distance (define)
         distance = estimate_distance(left_eye, right_eye)
 
         if distance >= 330:
+            new_state = 'red'
             box_color = red_color
-            print("Please move further away from the screen")
         elif 280 <= distance < 330:
+            new_state = 'yellow'
             box_color = yellow_color
-            print("Consider moving back. Extended exposure at this distance is not ideal")
         else:
+            new_state = 'green'
             box_color = green_color
-            print("You are currently at a safe viewing distance")
+
+        if new_state != current_state:
+            current_state = new_state
+
+            if current_state == 'red':
+                print("Please move further away from the screen")
+            elif current_state == 'yellow':
+                print("Consider moving back. Extended exposure at this distance is not ideal")
+            elif current_state == 'green':
+                print("You are currently at a safe viewing distance")
+
 
         # Draw rectangles around the eyes for visual feedback.
         # Calculate the bounding box for the left eye.
