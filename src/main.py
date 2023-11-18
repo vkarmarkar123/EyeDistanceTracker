@@ -18,6 +18,8 @@ yellow_color = (0, 255, 255)  # Yellow for middle distance
 red_color = (0, 0, 255)  # Red for too close
 
 current_state = None
+last_state_change_time = time.time()
+last_message_print_time = time.time()
 
 while True:
 
@@ -47,10 +49,10 @@ while True:
         #estimate distance (define)
         distance = estimate_distance(left_eye, right_eye)
 
-        if distance >= 330:
+        if distance >= 450:
             new_state = 'red'
             box_color = red_color
-        elif 280 <= distance < 330:
+        elif 300 <= distance < 450:
             new_state = 'yellow'
             box_color = yellow_color
         else:
@@ -59,6 +61,9 @@ while True:
 
         if new_state != current_state:
             current_state = new_state
+            #update time of state change and message print time
+            last_state_change_time = time.time()
+            last_message_print_time = time.time()
 
             if current_state == 'red':
                 print("Please move further away from the screen")
@@ -66,6 +71,19 @@ while True:
                 print("Consider moving back. Extended exposure at this distance is not ideal")
             elif current_state == 'green':
                 print("You are currently at a safe viewing distance")
+
+        #get current time, check if current viewing distance (VD) is yellow or red, set the seconds for the repeat interval depending on the current color of the VD
+        # if the difference btwn then current time and last print message is greater than the interval time of the current color, then print, and set last_print_msg to current time
+        current_time = time.time()
+        if current_state in ['yellow', 'red']:
+            #2 minute interval for yellow 1 min interval for red (reminder intervals)
+            repeat_interval = 120 if current_state == 'yellow' else 60
+            if current_time - last_message_print_time >= repeat_interval and current_time - last_state_change_time >= repeat_interval:
+                last_message_print_time = current_time
+                if current_state == 'red':
+                    print("Please move further away from the screen")
+                elif current_state == 'yellow':
+                    print("Consider moving back. Extended exposure at this distance is not ideal")
 
 
         # Draw rectangles around the eyes for visual feedback.
