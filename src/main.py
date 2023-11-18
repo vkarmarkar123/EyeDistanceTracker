@@ -1,0 +1,2 @@
+#this is the main script where the core logic of the application resides. The core logic includes the eye tracking, face detection, and distance estimation
+#this file is the entry point of the application. 
