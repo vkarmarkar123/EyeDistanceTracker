@@ -12,6 +12,10 @@ predictor = dlib.shape_predictor("../models/shape_predictor_68_face_landmarks.da
 #video from webcam
 cap = cv2.VideoCapture(1)
 
+green_color = (0, 255, 0)  # Green for safe distance
+yellow_color = (0, 255, 255)  # Yellow for middle distance
+red_color = (0, 0, 255)  # Red for too close
+
 while True:
 
     #cap.read() captures a frame from the webcam. ret = bool that is true if the frame was read correctly, frame holds the actual image captured from the webcam
@@ -40,6 +44,16 @@ while True:
         #estimate distance (defin)
         distance = estimate_distance(left_eye, right_eye)
 
+        if distance >= 330:
+            box_color = red_color
+            print("Please move further away from the screen")
+        elif 280 <= distance < 330:
+            box_color = yellow_color
+            print("Consider moving back. Extended exposure at this distance is not ideal")
+        else:
+            box_color = green_color
+            print("You are currently at a safe viewing distance")
+
         # Draw rectangles around the eyes for visual feedback.
         # Calculate the bounding box for the left eye.
         left_eye_x = [x for x, y in left_eye]
@@ -47,7 +61,7 @@ while True:
         left_eye_rect = (min(left_eye_x), min(left_eye_y)), (max(left_eye_x), max(left_eye_y))
         
         # Draw a green rectangle around the left eye.
-        cv2.rectangle(frame, left_eye_rect[0], left_eye_rect[1], (0, 255, 0), 2)
+        cv2.rectangle(frame, left_eye_rect[0], left_eye_rect[1], box_color, 2)
 
         # Calculate the bounding box for the right eye.
         right_eye_x = [x for x, y in right_eye]
@@ -55,12 +69,7 @@ while True:
         right_eye_rect = (min(right_eye_x), min(right_eye_y)), (max(right_eye_x), max(right_eye_y))
         
         # Draw a green rectangle around the right eye.
-        cv2.rectangle(frame, right_eye_rect[0], right_eye_rect[1], (0, 255, 0), 2)
-
-        if distance >= 100:
-            print("Please move further away from the screen")
-        else:
-            print("You are currently at a safe viewing distance")
+        cv2.rectangle(frame, right_eye_rect[0], right_eye_rect[1], box_color, 2)
 
     #display current frame in a window
     cv2.imshow('Frame', frame)
