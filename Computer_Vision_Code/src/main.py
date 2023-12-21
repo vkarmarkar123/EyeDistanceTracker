@@ -1,16 +1,20 @@
 #this is the main script where the core logic of the application resides. The core logic includes the eye tracking, face detection, and distance estimation
 #this file is the entry point of the application. 
+from flask import Flask, jsonify
+import threading
 import cv2
 import dlib  
 import numpy as np
 import time
 from est_dist import estimate_distance
 
-#initialize the Dlib face detector
+app = Flask(__name__)
+
+# Initialize the Dlib face detector
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor("../models/shape_predictor_68_face_landmarks.dat")
 
-#video from webcam
+# Video from webcam
 cap = cv2.VideoCapture(1)
 
 green_color = (0, 255, 0)  # Green for safe distance
@@ -20,6 +24,19 @@ red_color = (0, 0, 255)  # Red for too close
 current_state = None
 last_state_change_time = time.time()
 last_message_print_time = time.time()
+
+# Define a route in Flask to provide the current state and distance
+@app.route('/get-data')
+def get_data():
+    return jsonify({"state": current_state, "distance": distance})
+
+# Function to run the Flask app
+def run_flask_app():
+    app.run(port=5000, debug=False, use_reloader=False)
+
+# Start the Flask server in a separate thread
+flask_thread = threading.Thread(target=run_flask_app)
+flask_thread.start()
 
 while True:
 
